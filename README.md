@@ -95,3 +95,18 @@ foo
 this line will be replaced by the foo template //# template newclient
 ```
 
+### `replace`
+
+Replaces a given string with another string in the output.
+
+```
+//# replace __SOMEVAR__ XXX
+hello__SOMEVAR__world
+```
+
+Output:
+```
+helloXXXworld
+```
+
+Note: currently no support for whitespace in the sentinel string or the replacement string, and no way to remove a replacement.

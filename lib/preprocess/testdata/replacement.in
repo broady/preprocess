@@ -1,0 +1,4 @@
+//# replace __FOO pass
+__FOO
+//# replace __FOO pass2
+__FOO

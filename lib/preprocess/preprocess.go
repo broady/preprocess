@@ -19,11 +19,12 @@ func Process(in io.Reader, flags []string, prefix string) ([]byte, error) {
 	var buf bytes.Buffer
 
 	s := &scanner{
-		r:         bufio.NewReader(in),
-		templates: make(map[string][]byte),
-		prefix:    []byte(prefix),
-		flags:     flagMap,
-		w:         &buf,
+		r:            bufio.NewReader(in),
+		templates:    make(map[string][]byte),
+		replacements: make(map[string][]byte),
+		prefix:       []byte(prefix),
+		flags:        flagMap,
+		w:            &buf,
 	}
 	if err := s.start(); err != nil {
 		return nil, err
@@ -33,9 +34,10 @@ func Process(in io.Reader, flags []string, prefix string) ([]byte, error) {
 }
 
 type scanner struct {
-	templates map[string][]byte
-	flags     map[string]bool
-	prefix    []byte
+	templates    map[string][]byte
+	replacements map[string][]byte
+	flags        map[string]bool
+	prefix       []byte
 
 	state []state
 
@@ -49,6 +51,7 @@ type scanner struct {
 func (s *scanner) start() (err error) {
 	defer func() {
 		if r := recover(); r != nil {
+			//debug.PrintStack()
 			e, ok := r.(error)
 			if ok {
 				err = e
@@ -100,13 +103,21 @@ func (s *scanner) line() []byte {
 	return l
 }
 
+func (s *scanner) applyReplacements(line []byte) []byte {
+	// TODO(cbro): stable iteration order.
+	for sentinel, replacement := range s.replacements {
+		line = bytes.Replace(line, []byte(sentinel), replacement, -1)
+	}
+	return line
+}
+
 // State functions
 
 type state func(io.Writer, []byte)
 
 func (s *scanner) neutral(w io.Writer, line []byte) {
 	if !bytes.Contains(line, s.prefix) {
-		w.Write(line)
+		w.Write(s.applyReplacements(line))
 		return
 	}
 
@@ -132,7 +143,8 @@ func (s *scanner) neutral(w io.Writer, line []byte) {
 			} else if strings.HasPrefix(pragma[2], "!") && !s.flags[pragma[2][1:]] {
 				// omit
 			} else {
-				w.Write(bytes.TrimRightFunc(before, unicode.IsSpace)) // omit the pragma, print everything before
+				left := bytes.TrimRightFunc(before, unicode.IsSpace) // omit the pragma, print everything before
+				w.Write(s.applyReplacements(left))
 				w.Write([]byte("\n"))
 			}
 		}
@@ -143,7 +155,8 @@ func (s *scanner) neutral(w io.Writer, line []byte) {
 				s.error("expected 'if' for include directive")
 			}
 			if s.flags[pragma[2]] || (strings.HasPrefix(pragma[2], "!") && !s.flags[pragma[2][1:]]) {
-				w.Write(bytes.TrimRightFunc(before, unicode.IsSpace)) // omit the pragma, print everything before
+				left := bytes.TrimRightFunc(before, unicode.IsSpace) // omit the pragma, print everything before
+				w.Write(s.applyReplacements(left))
 				w.Write([]byte("\n"))
 			}
 		}
@@ -155,6 +168,15 @@ func (s *scanner) neutral(w io.Writer, line []byte) {
 		}
 		// TODO(cbro): properly handle line numbers for defs.
 		s.r = bufio.NewReader(io.MultiReader(bytes.NewReader(contents), s.r)) // prepend
+	case "replace":
+		if len(pragma) < 3 {
+			s.error("replace needs both sentinel and replacement")
+		}
+		var (
+			sentinel    = pragma[1]
+			replacement = pragma[2]
+		)
+		s.replacements[sentinel] = []byte(replacement)
 	default:
 		s.error(fmt.Sprintf("unknown directive %q", pragma[0]))
 	}
