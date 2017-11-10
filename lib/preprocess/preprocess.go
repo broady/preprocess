@@ -136,6 +136,17 @@ func (s *scanner) neutral(w io.Writer, line []byte) {
 			}
 		}
 		// omit entire line
+	case "include":
+		if len(pragma) > 2 {
+			if pragma[1] != "if" {
+				s.error("expected 'if' for include directive")
+			}
+			if s.flags[pragma[2]] || (strings.HasPrefix(pragma[2], "!") && !s.flags[pragma[2][1:]]) {
+				w.Write(bytes.TrimRightFunc(before, unicode.IsSpace)) // omit the pragma, print everything before
+				w.Write([]byte("\n"))
+			}
+		}
+		// omit entire line
 	case "replace":
 		contents, ok := s.templates[pragma[1]]
 		if !ok {

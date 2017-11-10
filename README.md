@@ -61,6 +61,15 @@ foo flag is unset //# omit if foo
 
 Trailing spaces are omitted if the line is printed.
 
+### `include if`
+
+Opposite of `omit if`. Includes the line if the flag is set.
+
+```
+foo flag is set   //# include if foo
+foo flag is unset //# include if !foo
+```
+
 ### `def`
 
 Takes a name as an argument to define a template. The template is defined as the lines up to the `enddef` directive.

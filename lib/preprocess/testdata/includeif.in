@@ -1,0 +1,2 @@
+pass //# include if true
+fail //# include if !true
