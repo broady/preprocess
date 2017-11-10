@@ -92,7 +92,7 @@ Takes a template name as an argument. Replaces the line with the given template.
 foo
 //# enddef
 
-this line will be replaced by the foo template //# template newclient
+this line will be replaced by the foo template //# template foo
 ```
 
 ### `replace`
