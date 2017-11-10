@@ -147,7 +147,7 @@ func (s *scanner) neutral(w io.Writer, line []byte) {
 			}
 		}
 		// omit entire line
-	case "replace":
+	case "template":
 		contents, ok := s.templates[pragma[1]]
 		if !ok {
 			s.error("unknown template - must be defined beforehand")

@@ -1,4 +1,4 @@
-//# def block
+//# def t
 itsblock
   //# if false
   fail
@@ -8,11 +8,11 @@ itsblock
   //# end
 //# enddef
 
-//# replace block
-ignored //# replace block
+//# template t
+ignored //# template t
 
 if
 //# if true
-  //# replace block
+  //# template t
 //# end
 
