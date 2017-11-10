@@ -1,0 +1,6 @@
+//# if !foo
+hello
+//# end
+//# if foo
+fail
+//# end

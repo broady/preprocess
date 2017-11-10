@@ -115,7 +115,10 @@ func (s *scanner) neutral(w io.Writer, line []byte) {
 	case "def":
 		s.pushState(s.def(pragma[1]))
 	case "if":
+		// TODO(cbro): support full boolean expressions.
 		if s.flags[pragma[1]] {
+			s.pushState(s.neutral)
+		} else if strings.HasPrefix(pragma[1], "!") && !s.flags[pragma[1][1:]] {
 			s.pushState(s.neutral)
 		} else {
 			s.pushState(s.consumeUntilEnd)
