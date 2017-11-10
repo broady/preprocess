@@ -1,0 +1,4 @@
+fail1 //# omit
+fail2 //# omit if true
+pass //# omit if !true
+pass

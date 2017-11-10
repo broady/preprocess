@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"unicode"
 )
 
 func Process(in io.Reader, flags []string, prefix string) ([]byte, error) {
@@ -108,7 +109,7 @@ func (s *scanner) neutral(w io.Writer, line []byte) {
 		return
 	}
 
-	_, pragma := s.splitPrefix(line)
+	before, pragma := s.splitPrefix(line)
 	switch pragma[0] {
 	case "end":
 		s.popState()
@@ -124,7 +125,17 @@ func (s *scanner) neutral(w io.Writer, line []byte) {
 			s.pushState(s.consumeUntilEnd)
 		}
 	case "omit":
-		// ignore entire line
+		if len(pragma) > 2 && pragma[1] == "if" {
+			if s.flags[pragma[2]] {
+				// omit
+			} else if strings.HasPrefix(pragma[2], "!") && !s.flags[pragma[2][1:]] {
+				// omit
+			} else {
+				w.Write(bytes.TrimRightFunc(before, unicode.IsSpace)) // omit the pragma, print everything before
+				w.Write([]byte("\n"))
+			}
+		}
+		// omit entire line
 	case "replace":
 		contents, ok := s.templates[pragma[1]]
 		if !ok {
