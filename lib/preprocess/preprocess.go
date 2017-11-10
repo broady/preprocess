@@ -77,13 +77,14 @@ func (s *scanner) pushState(t state) {
 
 func (s *scanner) popState() {
 	if len(s.state) == 1 {
-		s.error("unexpected end pragma")
+		s.error("unexpected end directive")
 	}
 	s.state = s.state[:len(s.state)-1]
 }
 
 func (s *scanner) error(e string) {
 	//debug.PrintStack()
+	// TODO(cbro): properly handle line numbers for defs.
 	panic(fmt.Errorf("%d: %s", s.lineNumber, e))
 }
 
@@ -155,7 +156,7 @@ func (s *scanner) neutral(w io.Writer, line []byte) {
 		// TODO(cbro): properly handle line numbers for defs.
 		s.r = bufio.NewReader(io.MultiReader(bytes.NewReader(contents), s.r)) // prepend
 	default:
-		panic(fmt.Errorf("%d: unknown pragma %q", pragma[1]))
+		s.error(fmt.Sprintf("unknown directive %q", pragma[0]))
 	}
 }
 
