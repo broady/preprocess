@@ -1,0 +1,13 @@
+normal
+//#if true
+it's true
+
+  //#if false
+  fail
+  //#end
+
+  //#if true
+  it's still true
+  //#end
+yes
+//#end

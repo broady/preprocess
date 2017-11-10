@@ -1,0 +1,18 @@
+//# def block
+itsblock
+  //# if false
+  fail
+  //# end
+  //# if true
+  good
+  //# end
+//# enddef
+
+//# replace block
+ignored //# replace block
+
+if
+//# if true
+  //# replace block
+//# end
+

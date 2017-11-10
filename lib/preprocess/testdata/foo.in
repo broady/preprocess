@@ -1,0 +1,4 @@
+//# if foo
+it's foo
+//# end
+normal
